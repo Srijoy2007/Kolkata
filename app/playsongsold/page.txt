@@ -1,0 +1,96 @@
+'use client';
+import { useState, useRef } from 'react';
+import { Yanone_Kaffeesatz } from 'next/font/google';
+import Image from 'next/image';
+
+import styles from './play.module.css';
+import '../globals.css';
+import Card from '../components/Card';
+
+const yanone = Yanone_Kaffeesatz({ weight: ['600', '700'], subsets: ['latin'] });
+export default function Home() {
+  const [currentSong, setCurrentSong] = useState(0);
+  const [playState, setPlayState] = useState(true);
+
+  const songs = [
+    '../assets/songs/song1.mp3',
+    '../assets/songs/song2.mp3',
+    '../assets/songs/song3.mp3',
+    '../assets/songs/song4.mp3',
+    '../assets/songs/song5.mp3',
+  ];
+  const playingSong = useRef(new Audio(songs[0]));
+  if (playState) playingSong.current.play();
+
+  let [reRender, setReRender] = useState(true);
+  const nextSong = () => {
+    const nextIndex = (currentSong + 1) % songs.length;
+    setCurrentSong(nextIndex);
+    playingSong.current.src = songs[nextIndex];
+    setPlayState(true);
+    if (playState) playingSong.current.play();
+    setReRender(true);
+  };
+
+  const pause = () => {
+    playState ? playingSong.current.pause() : playingSong.current.play();
+    setPlayState((playState) => {
+      return !playState;
+    });
+  };
+
+  document.querySelector('body').addEventListener('keydown', (event) => {
+    if (event.key === ' ' || event.key === 'Tab') {
+      pause();
+    }
+  });
+
+  return (
+    <main>
+      {/* this is the bg for the page */}
+      <div className={`${styles.bg_before}`}></div>
+      <div className='absolute top-10 xl:top-28 right-28 xsm:top-40 flex_center flex-wrap flex-col'>
+        {reRender && <Card />}
+        <div className='py-4'>
+          <button onClick={pause}>
+            {playState ? (
+              <Image
+                src={'/assets/images/pause.png'}
+                width={50}
+                height={50}
+                className='xl:text-[5rem] text-6xl text-white'
+                alt=''
+              />
+            ) : (
+              <Image
+                src={'../assets/images/play.svg'}
+                width={50}
+                height={50}
+                className='xl:text-[5rem] text-6xl text-white'
+                alt=''
+              />
+            )}
+          </button>
+          <button onClick={nextSong} className='ml-4'>
+            <Image
+              src={'../assets/images/next.svg'}
+              width={60}
+              height={60}
+              className='xl:text-[5rem] text-6xl text-white'
+              alt=''
+            />
+          </button>
+        </div>
+      </div>
+      <div className='absolute top-96 left-60 flex_center flex-col'>
+        <h1 className={`${yanone.className} text-white text-5xl font-extrabold text`}>
+          Amar<span className='text-pink-600'> কলকাতা</span>
+        </h1>
+        <p className='text-white my-4'>
+          Press <span className='bg-slate-300 p-1 opacity-70 rounded-md'>Space</span> OR
+          <span className='bg-slate-300 p-1 opacity-70 rounded-md'>Tab</span> to play
+        </p>
+      </div>
+    </main>
+  );
+}

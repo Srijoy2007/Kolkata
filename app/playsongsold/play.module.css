@@ -1,0 +1,14 @@
+.bg_before {
+  @apply min-h-screen bg-cover bg-no-repeat bg-bottom absolute top-0 left-0 -z-10 min-w-full;
+  background-image: url('../../public/assets/images/bg.png');
+  background-size: cover;
+
+  @media screen and (min-width: '700px') {
+    background-position-y: -250px;
+    background-size: cover;
+  }
+  @media  screen and (min-width:'400px') {
+    background-position-y: -250px;
+    background-size: cover;
+  }
+}
