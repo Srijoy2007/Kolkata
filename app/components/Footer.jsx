@@ -11,6 +11,10 @@ const Footer = () => {
       <Link href={'https://twitter.com/SrijoyGanguly'} target='_blank'>
         <AiFillTwitterCircle className='text-white cursor-pointer' />
       </Link>
+      <Link href={'https://docs.google.com/forms/d/1FLrVcoK-By3aI--KkVTkKtGPvXUMWOvP8bfgNiCa8QQ/edit'} target='_blank'>
+        
+        <p className='text-sm my-3 mr-3 ml-3 decoration-slice  '>REQUEST SONG</p>
+      </Link>
     </div>
   );
 };

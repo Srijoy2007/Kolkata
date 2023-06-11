@@ -9,7 +9,7 @@ const TextAnimation = ({ text, fontClassname }) => {
           initial={{ opacity: 0, x: -100 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ delay: index * 0.1 }}
-          className={`text-white text-7xl font-extrabold ${fontClassname}`}>
+          className={`text-white text-5xl sm:text-7xl font-extrabold ${fontClassname}`}>
           {letter}
         </motion.span>
       ))}
@@ -18,3 +18,4 @@ const TextAnimation = ({ text, fontClassname }) => {
 };
 
 export default TextAnimation;
+

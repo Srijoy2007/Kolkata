@@ -3,11 +3,12 @@
   background-image: url('../../public/assets/images/bg.png');
   background-size: cover;
 
-  @media screen and (min-width: '700px') {
+  @media (min-width: 700px) {
     background-position-y: -250px;
     background-size: cover;
   }
-  @media  screen and (min-width:'400px') {
+  
+  @media (min-width: 400px) {
     background-position-y: -250px;
     background-size: cover;
   }
