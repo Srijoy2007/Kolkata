@@ -62,16 +62,17 @@ const Card = () => {
     backgroundSize: 'cover',
   };
   return (
-    <>
+    <div className=''>
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.8 }}
         drag
+        
         dragConstraints={{ top: 0, right: 100, bottom: 0, left: 0 }}>
-        <div  className="border-none rounded-xl w-44 h-44 md:w-64 md:h-64 md:py-10" style={cardBackground}></div>
+        <div  className="border-none rounded-xl w-44 h-44 md:w-64 md:h-64 md:py-10 sm:mx-auto sm:my-20- mt-30 " style={cardBackground}></div>
       </motion.div>
-    </>
+    </div>
   );
 };
 
