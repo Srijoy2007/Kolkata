@@ -4,7 +4,7 @@ import Link from 'next/link';
 
 const Footer = () => {
   return (
-    <div className='bg-trasparent absolute bottom-0 text-white flex justify-end w-full p-[10px] text-4xl'>
+    <div className='bg-trasparent  bottom-0 text-white flex justify-end w-full p-[10px] text-4xl fixed'>
       <Link href={'https://github.com/Srijoy2007/KOLKATA-FM'} target='_blank'>
         <BsGithub className='text-white mr-4 cursor-pointer' />
       </Link>

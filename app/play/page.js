@@ -3,11 +3,12 @@ import { useEffect, useRef, useState } from "react";
 import { initializeApp } from "firebase/app";
 import { getStorage, ref, listAll, getDownloadURL } from "firebase/storage";
 import { firebaseConfig } from "../firebase";
-
 import styles from "../playsongsold/play.module.css";
 import Card from "../components/Card";
 import Image from "next/image";
 import { Yanone_Kaffeesatz } from "next/font/google";
+import { Range } from "react-range";
+
 const yanone = Yanone_Kaffeesatz({
   weight: ["600", "700"],
   subsets: ["latin"],
@@ -26,7 +27,33 @@ const Page = () => {
   const [playState, setPlayState] = useState(false);
   const songPath = useRef();
   const [isPlaying, setIsPlaying] = useState(false);
+  const [volume, setVolume] = useState(50); // Initial volume value
 
+  const getTrackBackground = ({ values, colors, min, max }) => {
+    const range = max - min;
+    const percentage = ((values[0] - min) / range) * 100;
+    return `linear-gradient(90deg, ${colors[0]} ${percentage}%, ${colors[1]} ${percentage}%)`;
+  };
+  const handleVolumeChange = (values) => {
+    const newVolume = values[0];
+    setVolume(newVolume);
+    audioRef.current.volume = newVolume / 100;
+  
+    // Increase volume on keyboard up arrow press
+    if (event.code === "ArrowUp" && newVolume < 100) {
+      const increasedVolume = newVolume + 10;
+      setVolume(increasedVolume);
+      audioRef.current.volume = increasedVolume / 100;
+    }
+  
+    // Decrease volume on keyboard down arrow press
+    if (event.code === "ArrowDown" && newVolume > 0) {
+      const decreasedVolume = newVolume - 10;
+      setVolume(decreasedVolume);
+      audioRef.current.volume = decreasedVolume / 100;
+    }
+  };
+  
   useEffect(() => {
     const fetchSongs = async () => {
       // Find all the prefixes and items.
@@ -64,6 +91,7 @@ const Page = () => {
     setIsPlaying((prevState) => !prevState);
     setCardRerender(true);
   };
+
   const handleAudioEnded = () => {
     songs.length - 1 === currentsongIndex
       ? setCurrentsongsIndex(0)
@@ -71,6 +99,16 @@ const Page = () => {
     setCardRerender(true);
     setPlayState(true);
   };
+
+  const handleAudioPrevious = () => {
+    setCurrentsongsIndex((prevIndex) =>
+      prevIndex === 0 ? songs.length - 1 : prevIndex - 1
+    );
+    setCardRerender(true);
+    setPlayState(true);
+  };
+  
+
   const [cardRerender, setCardRerender] = useState(true);
 
   useEffect(() => {
@@ -78,7 +116,6 @@ const Page = () => {
       if (event.code === "Space" || event.code === "Tab") {
         event.preventDefault();
         isPlaying ? audioRef.current.pause() : audioRef.current.play();
-
         handleAudioClick();
       }
     };
@@ -90,8 +127,10 @@ const Page = () => {
     };
   }, []);
 
+ 
+
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center  text-white">
+    <div className="min-h-screen flex flex-col justify-center items-center text-white">
       {/* this is the bg for the page */}
       <div className={`${styles.bg_before} absolute inset-0 z-0`}></div>
 
@@ -99,7 +138,16 @@ const Page = () => {
         {cardRerender && <Card />}
 
         <div className="py-4 flex items-center">
-          <button onClick={handleAudioClick} className="mr-4">
+        <button onClick={handleAudioPrevious} className="ml-4">
+            <Image
+              src={"/assets/images/back.png"}
+              width={60}
+              height={60}
+              className="xl:text-[5rem] text-6xl text-white"
+              alt=""
+            />
+          </button>
+          <button onClick={handleAudioClick} className="mr-4 ml-4">
             {playState ? (
               <Image
                 src={"/assets/images/pause.png"}
@@ -127,13 +175,12 @@ const Page = () => {
               alt=""
             />
           </button>
+         
         </div>
       </div>
 
-      <div className="absolute bottom-10 xl:bottom-28 left-10 xl:left-60 flex flex-col items-center">
-        <h1
-          className={`${yanone.className} text-3xl md:text-5xl font-extrabold md:mb-5`}
-        >
+      <div className="absolute bottom-10 xl:bottom-5 left-10 xl:left-60 flex flex-col items-center mb-8">
+        <h1 className={`${yanone.className} text-3xl md:text-5xl font-extrabold md:mb-3`}>
           Amar<span className="text-pink-600"> কলকাতা</span>
         </h1>
         <p className="text-white my-4">
@@ -143,13 +190,47 @@ const Page = () => {
           <span className="bg-slate-300 p-1 opacity-70 rounded-md">Tab</span> to
           play
         </p>
+        <div className="w-64">
+  <Range
+    values={[volume]}
+    step={1}
+    min={0}
+    max={100}
+    onChange={handleVolumeChange}
+    renderTrack={({ props, children }) => (
+      <div
+        {...props}
+        className="h-1 bg-gray-300 rounded-md"
+        style={{ touchAction: 'none' }}
+      >
+        <div className="flex">
+          <div
+            className="h-1 bg-indigo-600 rounded-md"
+            style={{
+              width: `${volume}%`,
+              transition: 'width 0.2s',
+            }}
+          >
+            {children}
+          </div>
+        </div>
+      </div>
+    )}
+    renderThumb={({ props }) => (
+      <div
+        {...props}
+        className="h-5 w-5 bg-indigo-600 rounded-full shadow-md cursor-pointer transform -translate-x-2.5 -translate-y-2"
+        style={{ touchAction: 'none' }}
+      >
+        <div className="h-2 w-2 bg-white rounded-full" />
+      </div>
+    )}
+  />
+</div>
+
       </div>
 
-      <audio
-        src={songPath.current}
-        ref={audioRef}
-        onEnded={handleAudioEnded}
-      ></audio>
+      <audio src={songPath.current} ref={audioRef} onEnded={handleAudioEnded}></audio>
     </div>
   );
 };
