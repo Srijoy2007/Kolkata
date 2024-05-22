@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from "react";
 import { initializeApp } from "firebase/app";
 import { getStorage, ref, listAll, getDownloadURL } from "firebase/storage";
-import { firebaseConfig } from "../firebase";
+import { firebaseConfig } from "../firebase"; // Ensure you have updated this file
 import styles from "../playsongsold/play.module.css";
 import Card from "../components/Card";
 import Image from "next/image";
@@ -17,8 +17,8 @@ const yanone = Yanone_Kaffeesatz({
 const app = initializeApp(firebaseConfig);
 const storage = getStorage();
 
-// Create a reference under which you want to list
-const listRef = ref(storage, "songs");
+// Reference to your new songs directory
+const listRef = ref(storage, "new-songs");
 
 const Page = () => {
   const audioRef = useRef(null);
@@ -34,46 +34,27 @@ const Page = () => {
     const percentage = ((values[0] - min) / range) * 100;
     return `linear-gradient(90deg, ${colors[0]} ${percentage}%, ${colors[1]} ${percentage}%)`;
   };
+
   const handleVolumeChange = (values) => {
     const newVolume = values[0];
     setVolume(newVolume);
     audioRef.current.volume = newVolume / 100;
-  
-    // Increase volume on keyboard up arrow press
-    if (event.code === "ArrowUp" && newVolume < 100) {
-      const increasedVolume = newVolume + 10;
-      setVolume(increasedVolume);
-      audioRef.current.volume = increasedVolume / 100;
-    }
-  
-    // Decrease volume on keyboard down arrow press
-    if (event.code === "ArrowDown" && newVolume > 0) {
-      const decreasedVolume = newVolume - 10;
-      setVolume(decreasedVolume);
-      audioRef.current.volume = decreasedVolume / 100;
-    }
   };
-  
+
   useEffect(() => {
     const fetchSongs = async () => {
-      // Find all the prefixes and items.
       await listAll(listRef)
         .then((res) => {
-          res.prefixes.forEach((folderRef) => {
-            console.log("folderref", folderRef);
-          });
           res.items.forEach((itemRef) => {
-            console.log("itermPathLocation", itemRef._location.path_);
-            getDownloadURL(ref(storage, itemRef._location.path_)).then(
+            getDownloadURL(ref(storage, itemRef.fullPath)).then(
               (url) => {
                 setSongs((prevSongs) => [...prevSongs, url]);
-                console.log("downloadurl:", url);
               }
             );
           });
         })
         .catch((error) => {
-          console.log(error);
+          console.error(error);
         });
     };
     fetchSongs();
@@ -107,7 +88,6 @@ const Page = () => {
     setCardRerender(true);
     setPlayState(true);
   };
-  
 
   const [cardRerender, setCardRerender] = useState(true);
 
@@ -127,18 +107,15 @@ const Page = () => {
     };
   }, []);
 
- 
-
   return (
     <div className="min-h-screen flex flex-col justify-center items-center text-white">
-      {/* this is the bg for the page */}
       <div className={`${styles.bg_before} absolute inset-0 z-0`}></div>
 
       <div className="absolute top-10 xl:top-28 right-10 xl:right-28 xsm:top-40 flex flex-col justify-center items-center ">
         {cardRerender && <Card />}
 
         <div className="py-4 flex items-center">
-        <button onClick={handleAudioPrevious} className="ml-4">
+          <button onClick={handleAudioPrevious} className="ml-4">
             <Image
               src={"/assets/images/back.png"}
               width={60}
@@ -175,7 +152,6 @@ const Page = () => {
               alt=""
             />
           </button>
-         
         </div>
       </div>
 
@@ -191,46 +167,48 @@ const Page = () => {
           play
         </p>
         <div className="w-64">
-  <Range
-    values={[volume]}
-    step={1}
-    min={0}
-    max={100}
-    onChange={handleVolumeChange}
-    renderTrack={({ props, children }) => (
-      <div
-        {...props}
-        className="h-1 bg-gray-300 rounded-md"
-        style={{ touchAction: 'none' }}
-      >
-        <div className="flex">
-          <div
-            className="h-1 bg-indigo-600 rounded-md"
-            style={{
-              width: `${volume}%`,
-              transition: 'width 0.2s',
-            }}
-          >
-            {children}
-          </div>
+          <Range
+            values={[volume]}
+            step={1}
+            min={0}
+            max={100}
+            onChange={handleVolumeChange}
+            renderTrack={({ props, children }) => (
+              <div
+                {...props}
+                className="h-1 bg-gray-300 rounded-md"
+                style={{ touchAction: 'none' }}
+              >
+                <div className="flex">
+                  <div
+                    className="h-1 bg-indigo-600 rounded-md"
+                    style={{
+                      width: `${volume}%`,
+                      transition: 'width 0.2s',
+                    }}
+                  >
+                    {children}
+                  </div>
+                </div>
+              </div>
+            )}
+            renderThumb={({ props }) => (
+              <div
+                {...props}
+                className="h-5 w-5 bg-indigo-600 rounded-full shadow-md cursor-pointer"
+              />
+            )}
+          />
         </div>
       </div>
-    )}
-    renderThumb={({ props }) => (
-      <div
-        {...props}
-        className="h-5 w-5 bg-indigo-600 rounded-full shadow-md cursor-pointer transform -translate-x-2.5 -translate-y-2"
-        style={{ touchAction: 'none' }}
-      >
-        <div className="h-2 w-2 bg-white rounded-full" />
-      </div>
-    )}
-  />
-</div>
 
-      </div>
-
-      <audio src={songPath.current} ref={audioRef} onEnded={handleAudioEnded}></audio>
+      <audio
+        ref={audioRef}
+        src={songPath.current}
+        onEnded={handleAudioEnded}
+        onPause={() => setIsPlaying(false)}
+        onPlay={() => setIsPlaying(true)}
+      />
     </div>
   );
 };
